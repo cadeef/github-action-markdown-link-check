@@ -8,7 +8,7 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 RED='\033[0;31m'
 
-npm i -g markdown-link-check@3.8.5
+# npm i -g markdown-link-check@3.8.5
 
 declare -a FIND_CALL
 declare -a COMMAND_DIRS COMMAND_FILES
@@ -47,12 +47,11 @@ echo -e "${BLUE}CHECK_MODIFIED_FILES: $6${NC}"
 echo -e "${BLUE}FILE_EXTENSION: $8${NC}"
 echo -e "${BLUE}FILE_PATH: $9${NC}"
 
-handle_dirs () {
+handle_dirs() {
 
-   IFS=', ' read -r -a DIRLIST <<< "$FOLDER_PATH"
+   IFS=', ' read -r -a DIRLIST <<<"$FOLDER_PATH"
 
-   for index in "${!DIRLIST[@]}"
-   do
+   for index in "${!DIRLIST[@]}"; do
       if [ ! -d "${DIRLIST[index]}" ]; then
          echo -e "${RED}ERROR [✖] Can't find the directory: ${YELLOW}${DIRLIST[index]}${NC}"
          exit 2
@@ -63,12 +62,11 @@ handle_dirs () {
 
 }
 
-handle_files () {
+handle_files() {
 
-   IFS=', ' read -r -a FILELIST <<< "$FILE_PATH"
+   IFS=', ' read -r -a FILELIST <<<"$FILE_PATH"
 
-   for index in "${!FILELIST[@]}"
-   do
+   for index in "${!FILELIST[@]}"; do
       if [ ! -f "${FILELIST[index]}" ]; then
          echo -e "${RED}ERROR [✖] Can't find the file: ${YELLOW}${FILELIST[index]}${NC}"
          exit 2
@@ -83,9 +81,9 @@ handle_files () {
 
 }
 
-check_errors () {
+check_errors() {
 
-   if [ -e error.txt ] ; then
+   if [ -e error.txt ]; then
       if grep -q "ERROR:" error.txt; then
          echo -e "${YELLOW}=========================> MARKDOWN LINK CHECK <=========================${NC}"
          cat error.txt
@@ -105,7 +103,7 @@ check_errors () {
 
 }
 
-add_options () {
+add_options() {
 
    if [ -f "$CONFIG_FILE" ]; then
       FIND_CALL+=('--config' "${CONFIG_FILE}")
@@ -121,7 +119,7 @@ add_options () {
 
 }
 
-check_additional_files () {
+check_additional_files() {
 
    if [ -n "$FILES" ]; then
       if [ "$MAX_DEPTH" -ne -1 ]; then
@@ -135,7 +133,7 @@ check_additional_files () {
       FIND_CALL+=(';')
 
       set -x
-      "${FIND_CALL[@]}" &>> error.txt
+      "${FIND_CALL[@]}" &>>error.txt
       set +x
 
    fi
@@ -156,27 +154,26 @@ if [ "$CHECK_MODIFIED_FILES" = "yes" ]; then
 
    echo -e "${BLUE}BASE_BRANCH: $7${NC}"
 
-   git fetch origin "${BASE_BRANCH}" --depth=1 > /dev/null
+   git fetch origin "${BASE_BRANCH}" --depth=1 >/dev/null
    MASTER_HASH=$(git rev-parse origin/"${BASE_BRANCH}")
 
    FIND_CALL=('markdown-link-check')
 
    add_options
 
-   mapfile -t FILE_ARRAY < <( git diff --name-only --diff-filter=AM "$MASTER_HASH" )
+   mapfile -t FILE_ARRAY < <(git diff --name-only --diff-filter=AM "$MASTER_HASH")
 
-   for i in "${FILE_ARRAY[@]}"
-      do
-         if [ "${i##*.}" == "${FILE_EXTENSION#.}" ]; then
-            FIND_CALL+=("${i}")
-            COMMAND="${FIND_CALL[*]}"
-            $COMMAND &>> error.txt || true
-            unset 'FIND_CALL[${#FIND_CALL[@]}-1]'
-         fi
-      done
+   for i in "${FILE_ARRAY[@]}"; do
+      if [ "${i##*.}" == "${FILE_EXTENSION#.}" ]; then
+         FIND_CALL+=("${i}")
+         COMMAND="${FIND_CALL[*]}"
+         $COMMAND &>>error.txt || true
+         unset 'FIND_CALL[${#FIND_CALL[@]}-1]'
+      fi
+   done
 
    check_additional_files
-   
+
    check_errors
 
 else
@@ -192,7 +189,7 @@ else
    FIND_CALL+=(';')
 
    set -x
-   "${FIND_CALL[@]}" &>> error.txt
+   "${FIND_CALL[@]}" &>>error.txt
    set +x
 
    check_additional_files
